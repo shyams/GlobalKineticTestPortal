@@ -20,7 +20,6 @@ $(document).ready(function () {
     });
     function timerIncrement() {
         idleTime = idleTime + 1;
-        console.log("idle for", idleTime);
         if (idleTime >= 3) { // 3 minutes
             console.log("We logging you out from the app");
             var strJSON = '{"token":"' + $("a#logoutBtn").attr("sessionID") + '"}';
@@ -47,7 +46,6 @@ $("#register").click(function () {
             type: 'PUT',
             data: '{"username":"' + user + '","password":"' + pass + '","phone":"' + phone + '"}',
             success: function (data, status) {
-                console.log(data);
                 if (status === "success") {
                     hideDivs();
                     window.location.reload();
@@ -59,13 +57,11 @@ $("#register").click(function () {
 });
 
 $("#login").click(function () {
-    console.log("clicked");
     var pass = $("#passwordToLogin").val();
     var user = $("#usernameToLogin").val();
     if (pass != "" && user != "") {
         var strJSON = '{"username":"' + user + '","password":"' + pass + '"}';
         $.post("TestWebservice", strJSON, function (data, status) {
-            console.log(data);
             if (status === "success") {
                 var jsonData = JSON.parse(data);
                 hideDivs();
@@ -74,6 +70,7 @@ $("#login").click(function () {
                 } else if (jsonData.id != undefined && jsonData.id != null) {
                     $("#loggerDetails").html("Signed in as: " + jsonData.id);
                     $("a#logoutBtn").attr("sessionID", jsonData.token)
+                    $("a#logoutBtn").attr("user", jsonData.id)
                     getLoggersDetails();
                 }
             }
@@ -86,7 +83,6 @@ function getLoggersDetails() {
     $.get("TestWebservice", function (data, status) {
 
         if (status === "success") {
-
             hideDivs();
             var jsonData = JSON.parse(data);
             var users = jsonData.users;
@@ -105,7 +101,6 @@ function getLoggersDetails() {
                 var date = new Date();
                 var millisec = date.getTime();
                 var minDiff = (time - millisec) / 60 / 1000; //in minutes
-                console.log(minDiff,time,millisec);
                 if (minDiff >= -5) {
                     $('#loggedInFiveMin tbody').append('<tr><th scope="row">' + count + '</th><td>' + name + '</td><td>' + phone + '</td></tr>')
                 }
@@ -117,9 +112,8 @@ function getLoggersDetails() {
 }
 
 $("a#logoutBtn").click(function () {
-    var strJSON = '{"token":"' + $("a#logoutBtn").attr("sessionID") + '"}';
+    var strJSON = '{"token":"' + $("a#logoutBtn").attr("sessionID") + '","id":"'+$("a#logoutBtn").attr("user")+'"}';
     $.post("TestWebservice", strJSON, function (data, status) {
-        console.log(data);
         if (status === "success") {
             var jsonData = JSON.parse(data);
             hideDivs();
@@ -129,9 +123,7 @@ $("a#logoutBtn").click(function () {
 });
 
 function checkUserLoggedIn() {
-    console.log("checking");
     if (($("a#logoutBtn").attr("sessionID")) != undefined) {
-        console.log("logged in");
         getLoggersDetails();
     }
 }
